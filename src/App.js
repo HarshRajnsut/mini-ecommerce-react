@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Routes, Route, Link } from "react-router-dom";
 import ProductList from "./components/ProductList";
 import Filters from "./components/Filters";
 import Cart from "./components/Cart";
@@ -6,17 +7,22 @@ import "./styles.css";
 
 function App() {
   const [products, setProducts] = useState([]);
-  const [cart, setCart] = useState({});
+
+  // ✅ cart localStorage se load
+  const [cart, setCart] = useState(() => {
+    const saved = localStorage.getItem("cart");
+    return saved ? JSON.parse(saved) : {};
+  });
+
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState("");
 
-  
+  // 🔹 products fetch
   useEffect(() => {
     fetch("https://fakestoreapi.com/products")
       .then(res => res.json())
       .then(data => {
-       
         const withStock = data.map(p => ({
           ...p,
           stock: Math.floor(Math.random() * 5) + 1
@@ -25,7 +31,12 @@ function App() {
       });
   }, []);
 
-  
+  // ✅ cart ko localStorage me save
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
+  // 🔹 filters + search + sort
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
@@ -50,12 +61,10 @@ function App() {
     return result;
   }, [products, search, category, sort]);
 
-  // Add to cart
+  // 🔹 add to cart
   const addToCart = (product) => {
     setCart(prev => {
       const currentQty = prev[product.id]?.quantity || 0;
-
-      
       if (currentQty >= product.stock) return prev;
 
       return {
@@ -68,7 +77,7 @@ function App() {
     });
   };
 
-  
+  // 🔹 update qty / remove
   const updateQty = (id, qty) => {
     if (qty < 0) return;
 
@@ -90,30 +99,60 @@ function App() {
   };
 
   return (
-    <div className="container">
+    <>
       <h1>Mini E-Commerce</h1>
 
-      <Filters
-        products={products}
-        search={search}
-        setSearch={setSearch}
-        category={category}
-        setCategory={setCategory}
-        sort={sort}
-        setSort={setSort}
-      />
+      <Link
+        to="/cart"
+        style={{
+          float: "right",
+          marginBottom: "15px",
+          fontWeight: "bold"
+        }}
+      >
+        🛒 Go to Cart ({Object.keys(cart).length})
+      </Link>
 
-      {filteredProducts.length === 0 ? (
-        <p>No products found</p>
-      ) : (
-        <ProductList
-          products={filteredProducts}
-          addToCart={addToCart}
+      <Routes>
+        {/* PRODUCTS PAGE */}
+        <Route
+          path="/"
+          element={
+            <>
+              <Filters
+                products={products}
+                search={search}
+                setSearch={setSearch}
+                category={category}
+                setCategory={setCategory}
+                sort={sort}
+                setSort={setSort}
+              />
+
+              {filteredProducts.length === 0 ? (
+                <p>No products found</p>
+              ) : (
+                <ProductList
+                  products={filteredProducts}
+                  addToCart={addToCart}
+                />
+              )}
+            </>
+          }
         />
-      )}
 
-      <Cart cart={cart} updateQty={updateQty} />
-    </div>
+        {/* CART PAGE */}
+        <Route
+          path="/cart"
+          element={
+            <Cart
+              cart={cart}
+              updateQty={updateQty}
+            />
+          }
+        />
+      </Routes>
+    </>
   );
 }
 
