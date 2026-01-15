@@ -8,7 +8,7 @@ import "./styles.css";
 function App() {
   const [products, setProducts] = useState([]);
 
-  // ✅ cart localStorage se load
+ 
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem("cart");
     return saved ? JSON.parse(saved) : {};
@@ -18,7 +18,7 @@ function App() {
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState("");
 
-  // 🔹 products fetch
+  
   useEffect(() => {
     fetch("https://fakestoreapi.com/products")
       .then(res => res.json())
@@ -31,12 +31,12 @@ function App() {
       });
   }, []);
 
-  // ✅ cart ko localStorage me save
+ 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-  // 🔹 filters + search + sort
+  
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
@@ -61,7 +61,7 @@ function App() {
     return result;
   }, [products, search, category, sort]);
 
-  // 🔹 add to cart
+
   const addToCart = (product) => {
     setCart(prev => {
       const currentQty = prev[product.id]?.quantity || 0;
@@ -77,7 +77,7 @@ function App() {
     });
   };
 
-  // 🔹 update qty / remove
+ 
   const updateQty = (id, qty) => {
     if (qty < 0) return;
 
