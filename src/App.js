@@ -110,7 +110,7 @@ function App() {
           fontWeight: "bold"
         }}
       >
-        🛒 Go to Cart ({Object.keys(cart).length})
+         Go to Cart ({Object.keys(cart).length})
       </Link>
 
       <Routes>
